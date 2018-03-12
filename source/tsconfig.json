@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "sourceMap": true,
+    "target": "ES6",
+    "moduleResolution": "node",
+    "jsx": "react",
+
+    "baseUrl": ".",
+    "paths": {
+      "flow/*": [ "../shared/flow/*" ],
+      "types/*": [ "../shared/types/*" ]
+    }
+  }
+}

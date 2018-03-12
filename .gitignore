@@ -1,0 +1,13 @@
+# FOLDERS
+.idea/
+.vscode/
+.cache/
+node_modules/
+
+dist/
+source/shared/flow/
+
+# FILES
+*.log
+.DS_Store
+secrets.env
