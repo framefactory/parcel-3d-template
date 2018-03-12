@@ -12,11 +12,15 @@ export default class Scene
     protected camera: THREE.Camera;
     protected scene: THREE.Scene;
     protected isStarted: boolean;
+    protected startTime: number;
+    protected lastTime: number;
 
     constructor(delayStart: boolean = false)
     {
         this.camera = null;
         this.scene = new THREE.Scene();
+        this.startTime = Date.now() * 0.001;
+        this.lastTime = 0;
 
         this.isStarted = !delayStart;
 
@@ -25,14 +29,22 @@ export default class Scene
         }
     }
 
+    /**
+     * Called once before rendering starts. Override and set up your scene content in this method.
+     * @param scene The internal Three.js scene. Attach all scene content to this object.
+     */
     protected start(scene: THREE.Scene): THREE.Camera
     {
         return new THREE.PerspectiveCamera(55, 1, 0.01, 100);
     }
 
-    protected update(time: number)
+    /**
+     * Called once per frame right before rendering. Update animations and parameters here.
+     * @param time The time since rendering has started in secods.
+     * @param delta The time between this frame and the previous frame.
+     */
+    update(time: number, delta: number)
     {
-
     }
 
     render(renderer: THREE.WebGLRenderer)
@@ -46,7 +58,10 @@ export default class Scene
             throw new Error("Scene.render - can't render, no camera initialized");
         }
 
-        this.update(0);
+        const time = Date.now() * 0.001 - this.startTime;
+        this.update(time, time - this.lastTime);
+        this.lastTime = time;
+
         renderer.render(this.scene, this.camera);
     }
 

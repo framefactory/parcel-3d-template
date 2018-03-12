@@ -10,9 +10,10 @@ import "./index.scss"
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Application from "./components/Application";
+import Canvas3d from "./components/Canvas3d";
+import SpinningCube from "./scenes/SpinningCube";
 
 ReactDOM.render(
-    <Application />,
+    <Canvas3d scene={SpinningCube} />,
     document.getElementById("main")
 );
