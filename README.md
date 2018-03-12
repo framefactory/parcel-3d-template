@@ -9,3 +9,11 @@
 1. Start server: ```npm start```
 1. Open a web browser (preferably Chrome) and enter ```localhost:1234```
 1. You should see a spinning cube!
+
+## Libraries used
+- Language: [Typescript](http://www.typescriptlang.org/)
+- HTML Components: [React](https://reactjs.org/)
+- WebGL Scene Library: [Three.js](https://threejs.org/)
+- GUI Controller: [dat.gui](http://workshop.chromeexperiments.com/examples/gui/#1--Basic-Usage)
+- Web Packer: [Parcel](https://parceljs.org/)
+
