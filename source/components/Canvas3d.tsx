@@ -10,22 +10,30 @@ import { CSSProperties } from "react";
 
 import * as THREE from "three";
 
+import ManipSource from "../helpers/ManipSource";
 import Scene from "../scenes/Scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface Canvas3dProps
+export interface Canvas3DProps
 {
     className?: string;
     style?: CSSProperties;
-    scene: Scene | typeof Scene;
+    scene?: Scene;
+    play?: boolean;
 }
 
-export default class Canvas3d extends React.Component<Canvas3dProps, {}>
+interface Canvas3DState
 {
-    static defaultProps: Canvas3dProps = {
+    isPlaying: boolean;
+}
+
+export default class Canvas3D extends React.Component<Canvas3DProps, Canvas3DState>
+{
+    static defaultProps: Canvas3DProps = {
         className: "canvas-3d",
-        scene: Scene
+        scene: null,
+        play: true
     };
 
     private static style: CSSProperties = {
@@ -37,21 +45,63 @@ export default class Canvas3d extends React.Component<Canvas3dProps, {}>
     protected canvas: HTMLCanvasElement;
     protected renderer: THREE.WebGLRenderer;
     protected animHandler: number;
+    protected manip: ManipSource;
     protected scene: Scene;
 
-    constructor(props: Canvas3dProps)
+    constructor(props: Canvas3DProps)
     {
         super(props);
 
-        this.onAnimationFrame = this.onAnimationFrame.bind(this);
-        this.onRef = this.onRef.bind(this);
-        this.onResize = this.onResize.bind(this);
+        this.state = {
+            isPlaying: props.play
+        };
 
-        if (typeof this.props.scene === "function") {
-            this.scene = new this.props.scene();
+        this.onRef = this.onRef.bind(this);
+        this.onAnimationFrame = this.onAnimationFrame.bind(this);
+        this.onResize = this.onResize.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps: Canvas3DProps)
+    {
+        this.setState({
+            isPlaying: nextProps.play
+        });
+    }
+
+    start()
+    {
+        this.setState({
+            isPlaying: true
+        });
+    }
+
+    stop()
+    {
+        cancelAnimationFrame(this.animHandler);
+
+        this.setState({
+            isPlaying: false
+        });
+    }
+
+    advance()
+    {
+        if (this.animHandler === 0) {
+            this.scene.render();
         }
-        else {
-            this.scene = this.props.scene;
+    }
+
+    setScene(scene: Scene)
+    {
+        if (scene !== this.scene && this.manip) {
+            if (this.scene) {
+                this.manip.setListener(null);
+            }
+            if (scene && this.renderer) {
+                scene.initialize(this.renderer, this.manip);
+            }
+
+            this.scene = scene;
         }
     }
 
@@ -60,22 +110,22 @@ export default class Canvas3d extends React.Component<Canvas3dProps, {}>
         const {
             className,
             style,
-            children
+            scene
         } = this.props;
 
-        const stylesCombined = Object.assign({}, Canvas3d.style, style);
+        this.setScene(scene);
+
+        if (this.animHandler === 0) {
+            this.onAnimationFrame();
+        }
+
+        const styles = Object.assign({}, Canvas3D.style, style);
 
         return (<canvas
             className={className}
-            style={stylesCombined}
+            style={styles}
             ref={this.onRef}
         />);
-    }
-
-    protected onAnimationFrame()
-    {
-        this.animHandler = requestAnimationFrame(this.onAnimationFrame);
-        this.scene.render(this.renderer);
     }
 
     protected onRef(canvas: HTMLCanvasElement)
@@ -83,16 +133,33 @@ export default class Canvas3d extends React.Component<Canvas3dProps, {}>
         this.canvas = canvas;
 
         if (canvas) {
+            this.manip = new ManipSource(canvas, { touchable: true, scrollable: true });
             this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            this.setScene(this.props.scene);
+
             window.addEventListener("resize", this.onResize);
             this.onResize();
+
             this.onAnimationFrame();
         }
         else {
             cancelAnimationFrame(this.animHandler);
             window.removeEventListener("resize", this.onResize);
+
+            this.manip.detach();
+            this.manip = null;
             this.renderer = null;
         }
+    }
+
+    protected onAnimationFrame()
+    {
+        if (!this.state.isPlaying || !this.scene) {
+            return;
+        }
+
+        this.animHandler = requestAnimationFrame(this.onAnimationFrame);
+        this.scene.render();
     }
 
     protected onResize()

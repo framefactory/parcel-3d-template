@@ -6,7 +6,7 @@
  */
 
 import * as THREE from "three";
-import Scene from "./Scene";
+import OrbitControllerScene from "./OrbitControllerScene";
 
 import dat from "dat.gui/build/dat.gui.module";
 
@@ -15,7 +15,7 @@ import dat from "dat.gui/build/dat.gui.module";
 /**
  * Example 3D scene with a dat.GUI controller, showing a spinning cube.
  */
-export default class SpinningCube extends Scene
+export default class SpinningCube extends OrbitControllerScene
 {
     box: THREE.Mesh;
     gui: dat.GUI;
@@ -30,9 +30,7 @@ export default class SpinningCube extends Scene
     protected setup(scene: THREE.Scene): THREE.Camera
     {
         // Create camera
-
-        const camera = new THREE.PerspectiveCamera(55, 1, 0.01, 100);
-        camera.position.set(0, 0, 2);
+        const camera = super.setup(scene, new THREE.Vector3(1, 1, 3));
 
         // Create lights
 
@@ -78,13 +76,12 @@ export default class SpinningCube extends Scene
 
     /**
      * Called once per frame right before rendering. Update animations and parameters here.
-     * @param time The time since rendering has started in secods.
+     * @param time The time since rendering has started in seconds.
      * @param delta The time between this frame and the previous frame.
      */
     protected update(time: number, delta: number)
     {
-        this.box.rotateX(2 * this.speed * delta);
-        this.box.rotateY(1.3 * this.speed * delta);
+        super.update(time, delta);
 
         const mat = this.box.material as THREE.MeshStandardMaterial;
         mat.color = new THREE.Color(this.color);
